@@ -2,6 +2,7 @@ package com.micro.cryptoChecker.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.micro.cryptoChecker.dto.PriceConversionDto;
+import com.micro.cryptoChecker.model.PriceCheckBackgroundJob;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -19,6 +20,9 @@ public class PriceChecker {
     @Autowired
     private EmailSendingService emailSendingService;
 
+    @Autowired
+    private BackgroundJobService backgroundJobService;
+
     private final ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
 
     @PostConstruct
@@ -29,6 +33,9 @@ public class PriceChecker {
     }
 
     public void startCurrencyChecking(int price) {
+        PriceCheckBackgroundJob priceCheckbackgroundJob = PriceCheckBackgroundJob.builder().
+                targetPrice(price).currency("Bitcoin").build();
+
         threadPoolTaskScheduler.execute(() -> {
 
            boolean isNeccessaryPriceAimed = false;
@@ -38,7 +45,7 @@ public class PriceChecker {
                    PriceConversionDto priceConversionDto = currencyService.getCurrencies();
                    if (Double.parseDouble(priceConversionDto.getData().getQuote().getUsd().getPrice()) < price) {
                        emailSendingService.sendSimpleMessage("vanyaserdyuk1@gmail.com",
-                               String.format("It costs %d dollars", price), "Congratulation!");
+                               String.format("It costs %d dollars", price), "Congratulations!");
                        isNeccessaryPriceAimed = true;
                        log.info("Job completed!");
                    }
@@ -50,5 +57,7 @@ public class PriceChecker {
                }
            }
         });
+
+        backgroundJobService.save(priceCheckbackgroundJob);
     }
 }
