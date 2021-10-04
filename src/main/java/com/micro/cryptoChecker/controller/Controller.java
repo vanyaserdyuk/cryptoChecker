@@ -58,7 +58,7 @@ public class Controller {
         priceChecker.startCurrencyChecking(price);
     }
 
-    @GetMapping("/histoey")
+    @GetMapping("/history")
     public List<BackgroundJobDto> getHistory() {
         List<PriceCheckBackgroundJob> jobs = backgroundJobService.getAllJobs();
         return jobs.stream().map(jobDtoMapper::priceCheckBackGroundJobToDto)

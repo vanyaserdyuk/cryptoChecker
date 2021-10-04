@@ -25,6 +25,7 @@ public class PriceCheckBackgroundJob {
     @Getter
     @Setter
     @NonNull
+    @Column(name = "target_price")
     private int targetPrice;
 
 
